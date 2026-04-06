@@ -18,12 +18,13 @@ import java.time.Instant;
 import java.util.List;
 
 /**
- * Downloads and synchronizes files from the remote server to the local game directory.
+ * Downloads and synchronizes files from the remote server to the local game
+ * directory.
  * <p>
  * For each remote file that is newer than the local copy:
  * <ol>
- *     <li>Creates a {@code .bak} backup of the existing local file</li>
- *     <li>Downloads the remote file and writes it to the local path</li>
+ * <li>Creates a {@code .bak} backup of the existing local file</li>
+ * <li>Downloads the remote file and writes it to the local path</li>
  * </ol>
  * <p>
  * Progress messages are sent to {@link StartupMessageManager} for display on
@@ -44,8 +45,8 @@ public class FileSynchronizer {
     /**
      * Synchronizes all files from the remote file list to the local game directory.
      *
-     * @param baseUrl    the remote server base URL
-     * @param gameDir    the local game directory (.minecraft)
+     * @param baseUrl     the remote server base URL
+     * @param gameDir     the local game directory (.minecraft)
      * @param remoteFiles the list of remote file entries from crawling
      * @return the number of files updated
      */
@@ -96,7 +97,8 @@ public class FileSynchronizer {
             }
         }
 
-        String completeMsg = String.format("[PackSync] Sync phase complete. Updated %d, skipped %d, failed %d files.", updatedCount, skippedCount, failedCount);
+        String completeMsg = String.format("[PackSync] Sync phase complete. Updated %d, skipped %d, failed %d files.",
+                updatedCount, skippedCount, failedCount);
         StartupMessageManager.addModMessage(completeMsg);
         LOGGER.info(completeMsg);
 
@@ -108,9 +110,9 @@ public class FileSynchronizer {
      * <p>
      * A file is re-downloaded if any of the following are true:
      * <ul>
-     *     <li>The local file does not exist</li>
-     *     <li>The remote modification time is strictly newer</li>
-     *     <li>The local file size does not match the remote size</li>
+     * <li>The local file does not exist</li>
+     * <li>The remote modification time is strictly newer</li>
+     * <li>The local file size does not match the remote size</li>
      * </ul>
      */
     private boolean shouldUpdate(Path localFile, CaddyCrawler.RemoteFileEntry remote) {
@@ -121,7 +123,8 @@ public class FileSynchronizer {
             // Size mismatch — likely a corrupted or incomplete download
             long localSize = Files.size(localFile);
             if (localSize != remote.getSize()) {
-                LOGGER.debug("[PackSync] Size mismatch for {}: local={} remote={}", localFile.getFileName(), localSize, remote.getSize());
+                LOGGER.debug("[PackSync] Size mismatch for {}: local={} remote={}", localFile.getFileName(), localSize,
+                        remote.getSize());
                 return true;
             }
             // Modification time — remote is newer
@@ -173,7 +176,7 @@ public class FileSynchronizer {
                 Files.move(tempFile, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (java.nio.file.AtomicMoveNotSupportedException e) {
                 // Fallback for filesystems that don't support atomic moves
-                Files.move(tempFile, target, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(tempFile, target, StandardCopyOption.REPLACE_EXISTING);
             }
         } else {
             throw new RuntimeException("HTTP " + response.statusCode() + " downloading " + url);
