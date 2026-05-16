@@ -3,60 +3,81 @@ package io.ib67.packsync.loading;
 import io.ib67.packsync.PackSync;
 import io.ib67.packsync.UpdateEvent;
 import io.ib67.packsync.data.SyncConfig;
-import io.ib67.packsync.util.Proxies;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.fml.loading.moddiscovery.AbstractJarFileModProvider;
-import net.neoforged.neoforgespi.locating.IModLocator;
+import net.neoforged.neoforgespi.ILaunchContext;
+import net.neoforged.neoforgespi.locating.IDiscoveryPipeline;
+import net.neoforged.neoforgespi.locating.IModFileCandidateLocator;
+import net.neoforged.neoforgespi.locating.IncompatibleFileReporting;
+import net.neoforged.neoforgespi.locating.ModFileDiscoveryAttributes;
 
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import static io.ib67.packsync.PackSync.log;
 
-public class PackSyncModLocator extends AbstractJarFileModProvider implements IModLocator {
+public class PackSyncModLocator implements IModFileCandidateLocator {
     private static final boolean CAN_SHOW_DIALOG = !GraphicsEnvironment.isHeadless() || Boolean.getBoolean("packsync.allowDialogs");
-    private PackSync packSync;
+    private volatile PackSync packSync;
 
     @Override
-    public String name() {
-        return "packsync managed mods locator";
-    }
-
-    @Override
-    public void initArguments(Map<String, ?> arguments) {
-        var gameDir = FMLPaths.GAMEDIR.get();
-        var syncConfig = loadSyncConfig(gameDir);
-        PackSyncGui gui = null;
-        if (CAN_SHOW_DIALOG) {
-            gui = new PackSyncGui();
-            gui.setVisible(true);
-        }
-        packSync = new PackSync(gameDir, syncConfig, gui);
-        try {
-            Files.createDirectories(packSync.managedModsDir());
-            Files.createDirectories(packSync.stateDir());
-        } catch (Exception e) {
-            log("PackSync will not load because an error occurred");
-            e.printStackTrace();
+    public void findCandidates(ILaunchContext context, IDiscoveryPipeline pipeline) {
+        var currentPackSync = initializePackSync();
+        if (currentPackSync == null) {
             return;
         }
-
-        try {
-            var newManifest = packSync.performSync();
-            if (newManifest == null) {
-                return;
-            }
-            log("Update completed. Saving manifest cache...");
-            packSync.saveLocalManifest(newManifest);
-        } catch (Exception e) {
-            log("Error occurred during update");
+        try (var list = Files.list(currentPackSync.managedModsDir())) {
+            list.filter(Files::isRegularFile)
+                    .forEach(path -> pipeline.addPath(path, ModFileDiscoveryAttributes.DEFAULT.withLocator(this),
+                            IncompatibleFileReporting.WARN_ALWAYS));
+        } catch (IOException e) {
+            log("Error occurred while attempting to scan mods");
             e.printStackTrace();
-            if (gui != null) gui.accept(new UpdateEvent.SyncError(e.getMessage(), e));
+        }
+    }
+
+    private PackSync initializePackSync() {
+        if (packSync != null) {
+            return packSync;
+        }
+        synchronized (this) {
+            if (packSync != null) {
+                return packSync;
+            }
+            var gameDir = FMLPaths.GAMEDIR.get();
+            var syncConfig = loadSyncConfig(gameDir);
+            PackSyncGui gui = null;
+            if (CAN_SHOW_DIALOG) {
+                gui = new PackSyncGui();
+                gui.setVisible(true);
+            }
+            var currentPackSync = new PackSync(gameDir, syncConfig, gui);
+            try {
+                Files.createDirectories(currentPackSync.managedModsDir());
+                Files.createDirectories(currentPackSync.stateDir());
+            } catch (Exception e) {
+                log("PackSync will not load because an error occurred");
+                e.printStackTrace();
+                return null;
+            }
+
+            try {
+                var newManifest = currentPackSync.performSync();
+                if (newManifest != null) {
+                    log("Update completed. Saving manifest cache...");
+                    currentPackSync.saveLocalManifest(newManifest);
+                }
+            } catch (Exception e) {
+                log("Error occurred during update");
+                e.printStackTrace();
+                if (gui != null) {
+                    gui.accept(new UpdateEvent.SyncError(e.getMessage(), e));
+                }
+            }
+            packSync = currentPackSync;
+            return currentPackSync;
         }
     }
 
@@ -80,15 +101,7 @@ public class PackSyncModLocator extends AbstractJarFileModProvider implements IM
     }
 
     @Override
-    public List<ModFileOrException> scanMods() {
-        try (var list = Files.list(packSync.managedModsDir())) {
-            return list.map(this::createMod)
-                    .map(it -> it.file() == null ? it : new ModFileOrException(Proxies.wrapPrioritized(it.file()), it.ex()))
-                    .toList();
-        } catch (IOException e) {
-            log("Error occurred while attempting to scan mods: ");
-            e.printStackTrace();
-        }
-        return List.of();
+    public String toString() {
+        return "{packsync managed mods locator}";
     }
 }
