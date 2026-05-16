@@ -20,6 +20,7 @@ import static io.ib67.packsync.PackSync.log;
 
 public class PackSyncModLocator implements IModFileCandidateLocator {
     private static final boolean CAN_SHOW_DIALOG = !GraphicsEnvironment.isHeadless() || Boolean.getBoolean("packsync.allowDialogs");
+    private final Object initLock = new Object();
     private volatile PackSync packSync;
 
     @Override
@@ -42,7 +43,7 @@ public class PackSyncModLocator implements IModFileCandidateLocator {
         if (packSync != null) {
             return packSync;
         }
-        synchronized (this) {
+        synchronized (initLock) {
             if (packSync != null) {
                 return packSync;
             }
