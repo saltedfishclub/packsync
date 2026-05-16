@@ -8,7 +8,7 @@ import io.ib67.packsync.data.VersionManifest;
 import io.ib67.packsync.data.adapter.InstantAdapter;
 import io.ib67.packsync.util.BiGenerator;
 import io.ib67.packsync.util.CompletableFutureRoller;
-import net.minecraftforge.fml.StartupMessageManager;
+import net.neoforged.fml.StartupMessageManager;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

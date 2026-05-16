@@ -4,9 +4,9 @@ import io.ib67.packsync.PackSync;
 import io.ib67.packsync.UpdateEvent;
 import io.ib67.packsync.data.SyncConfig;
 import io.ib67.packsync.util.Proxies;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.moddiscovery.AbstractJarFileModProvider;
-import net.minecraftforge.forgespi.locating.IModLocator;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.fml.loading.moddiscovery.AbstractJarFileModProvider;
+import net.neoforged.neoforgespi.locating.IModLocator;
 
 import java.awt.*;
 import java.io.IOException;

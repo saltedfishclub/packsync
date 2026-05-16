@@ -1,6 +1,6 @@
 package io.ib67.packsync.util;
 
-import net.minecraftforge.fml.StartupMessageManager;
+import net.neoforged.fml.StartupMessageManager;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
