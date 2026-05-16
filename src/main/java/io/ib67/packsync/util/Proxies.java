@@ -1,7 +1,7 @@
 package io.ib67.packsync.util;
 
-import net.minecraftforge.forgespi.language.IModInfo;
-import net.minecraftforge.forgespi.locating.IModFile;
+import net.neoforged.neoforgespi.language.IModInfo;
+import net.neoforged.neoforgespi.locating.IModFile;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 
 import java.lang.reflect.Proxy;

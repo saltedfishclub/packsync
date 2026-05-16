@@ -1,7 +1,5 @@
 package io.ib67.packsync.util;
 
-import net.minecraftforge.fml.StartupMessageManager;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -20,10 +18,10 @@ public class CompletableFutureRoller<T ,R> implements Function<Throwable, Comple
 
     @Override
     public CompletionStage<R> apply(Throwable throwable) {
-        StartupMessageManager.addModMessage("Task failed: "+throwable.getMessage());
+        System.out.println("[PackSync] Task failed: " + throwable.getMessage());
         if(listOfFutures.isEmpty()) return CompletableFuture.failedFuture(throwable);
         var target = listOfFutures.pop();
-        StartupMessageManager.addModMessage("Retrying with "+target);
+        System.out.println("[PackSync] Retrying with " + target);
         return mapper.apply(target).exceptionallyCompose(this);
     }
 }

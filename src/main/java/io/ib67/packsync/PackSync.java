@@ -8,7 +8,6 @@ import io.ib67.packsync.data.VersionManifest;
 import io.ib67.packsync.data.adapter.InstantAdapter;
 import io.ib67.packsync.util.BiGenerator;
 import io.ib67.packsync.util.CompletableFutureRoller;
-import net.minecraftforge.fml.StartupMessageManager;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -188,7 +187,7 @@ public class PackSync {
     }
 
     public static void log(String message) {
-        StartupMessageManager.addModMessage("[PackSync] " + message);
+        System.out.println("[PackSync] " + message);
     }
 
     // This method asserts the file exists.

@@ -1,12 +1,11 @@
 package io.ib67.packsync;
 
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.common.Mod;
 
 @Mod(PackSyncMod.MODID)
 public class PackSyncMod {
     public static final String MODID = "packsync";
 
-    public PackSyncMod(FMLJavaModLoadingContext context) {
+    public PackSyncMod() {
     }
 }
